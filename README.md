@@ -1,35 +1,56 @@
-# Invictus Supply Solutions LLC
+# Invictus Supply Solutions LLC websites
 
-The company's public, single-page website: **https://invictussupplysolutions.com/**.
+Maintain both static sites in this project. The company root page and the innovation consultancy page have separate public addresses and GitHub Pages deployments.
 
-Semantic HTML and CSS with original local SVG/PNG assets. No build system, runtime JavaScript, external fonts, analytics, or form service.
+| Website | Source here | Publishing repository |
+| --- | --- | --- |
+| https://invictussupplysolutions.com/ | Root `index.html`, `styles.css`, `assets/` | `Invictus-Supply-Solutions/Invictus-Supply-Solutions.github.io` |
+| https://innovation.invictussupplysolutions.com/ | `innovation/` | `Invictus-Supply-Solutions/invictus-innovation` |
+
+The root page and its procurement social-card assets are retained. The innovation page describes an exploratory consultancy; examples are proposed workflows, not customer results or launched products.
 
 ## Preview and edit
 
-Run `python3 -m http.server 4173 --bind 127.0.0.1` in this directory, then open `http://127.0.0.1:4173/`.
+From this directory run:
 
-- `index.html`: company copy, links, page metadata, and workflow illustration.
-- `styles.css`: colors, typography, spacing, and responsive layouts.
-- `assets/favicon.svg`: browser icon.
-- `assets/social-card.svg`: editable source for the 1200 × 630 social-sharing PNG. Export to `assets/social-card.png` after visual changes.
-- `CNAME`: intended custom domain for branch-based GitHub Pages publishing.
+```sh
+python3 -m http.server 4177 --bind 127.0.0.1
+```
 
-Keep factual claims aligned with the business's actual development stage. The DIBBS data-collection prototype is existing groundwork. Claude integration is planned. Do not add a formation year or certification claim without verification. Update the footer copyright year when appropriate.
+Open `http://127.0.0.1:4177/` for the root site and `http://127.0.0.1:4177/innovation/` for the consultancy. Stop the server with Ctrl-C when finished.
 
-## Publish
+Edit the appropriate `index.html` for copy and `styles.css` for appearance. Both sites work without a package installation or build step. Keep private records and credentials out of these public files. Screenshots and verification records belong in the ignored `artifacts/` folder.
 
-Repository: `Invictus-Supply-Solutions/Invictus-Supply-Solutions.github.io`.
+## Publish approved changes
 
-GitHub Pages is configured to **Deploy from a branch**, branch **main**, folder **/ (root)**. `.nojekyll` keeps the site static. Publish an approved change by committing and pushing to `main`, subject to current repository protections. GitHub runs its managed **pages build and deployment** workflow; no custom workflow file is needed.
+Review the diff and check phone and desktop layouts before committing. Work on a change branch; after approval, bring the reviewed change into canonical `main` using the repository's current rules.
 
-In **Settings → Pages**, the custom domain must be `invictussupplysolutions.com` and **Enforce HTTPS** must be enabled. `CNAME` supports this publishing method but is not proof that the live setting is configured.
+Publishing the root project:
 
-The apex already uses GitHub's four A records: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, and `185.199.111.153`. At restoration, `www` uses Squarespace forwarding to the canonical HTTPS apex. This forwarding can remain while it works. To route `www` directly to Pages, change only its CNAME to `invictus-supply-solutions.github.io`, then verify the redirect and certificate. Preserve MX, SPF, DKIM, DMARC, domain verification records, and nameservers.
+```sh
+git push origin main
+```
 
-After publishing, confirm the Pages deployment succeeds for the intended commit, then check the actual public page, HTTPS, asset responses, HTTP redirect, and `www` forwarding. Do not infer public availability from a local preview alone.
+Publishing the innovation folder, from a clean, reviewed `main` checkout:
 
-## Verify changes
+```sh
+git subtree push --prefix=innovation https://github.com/Invictus-Supply-Solutions/invictus-innovation.git main
+```
 
-Before publishing, inspect desktop and mobile layouts, including narrow 320px screens. Check keyboard navigation and visible focus, all section anchors, both email links, reduced-motion behavior, and the absence of horizontal overflow. Ensure the social image and favicon load and the content distinguishes existing groundwork from planned capabilities.
+The second command publishes only committed files under `innovation/`. A root push alone does not update the separate innovation hostname. The innovation repository is a publication copy; make edits in this canonical project, not directly in that copy. If the mirror has independent changes, reconcile them here before publishing; do not force-push to bypass a divergence.
 
-Official GitHub guidance: [publishing source](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site), [custom domain](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site), and [HTTPS](https://docs.github.com/en/pages/getting-started-with-github-pages/securing-your-github-pages-site-with-https).
+Both repositories use Pages **Deploy from a branch**, `main`, `/ (root)`. Retain `.nojekyll` and the correct `CNAME` in each source root. Verify both Pages runs and public URLs after deployment. Pages custom-domain settings must also match; a local file alone is not proof of live configuration.
+
+## Domains and email
+
+The root stays at `invictussupplysolutions.com`. The innovation site uses `innovation.invictussupplysolutions.com`, with a DNS CNAME for host `innovation` pointing to `invictus-supply-solutions.github.io`. Keep HTTPS enforced for both.
+
+Retain the root site's apex records and existing `www` forwarding. Preserve domain registration, nameservers, MX, SPF, DKIM, DMARC and verification records. The email contact remains `philip@invictussupplysolutions.com` on both pages.
+
+`innovation/` is also accessible as a path on the root site; its canonical metadata identifies the subdomain as the preferred address. See [publication configuration](docs/publication-options.md).
+
+## Verification
+
+Check the two distinct page headings, local CSS/favicon assets, navigation anchors, keyboard focus, email links, narrow-screen wrapping, and HTTPS. Keep the original root social-card assets: the original page references them. The innovation site uses text-only social metadata.
+
+Official guidance: [publishing sources](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site), [custom domains](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
