@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <title>Invictus Supply Solutions LLC — Clarity for complex procurement.</title>
+  <desc>Veteran-owned. Kentucky-based.</desc>
+  <rect width="1200" height="630" fill="#102a37"/>
+  <path d="M1058 0V388H1200M1092 0V354H1200M1126 0V320H1200" fill="none" stroke="#bfa46f" stroke-opacity=".24" stroke-width="1"/>
+  <rect x="72" y="60" width="58" height="58" rx="8" fill="#bfa46f"/>
+  <path d="M86 74H116V79H104V99H116V104H86V99H98V79H86Z" fill="#102a37"/>
+  <text x="150" y="85" fill="#f6f4ee" font-family="Georgia, serif" font-size="28" letter-spacing="5">INVICTUS</text>
+  <text x="152" y="111" fill="#bfa46f" font-family="Arial, sans-serif" font-size="12" letter-spacing="3">SUPPLY SOLUTIONS LLC</text>
+  <rect x="72" y="188" width="64" height="4" fill="#bfa46f"/>
+  <text x="68" y="281" fill="#f6f4ee" font-family="Georgia, serif" font-size="72">Clarity for</text>
+  <text x="68" y="369" fill="#f6f4ee" font-family="Georgia, serif" font-size="72">complex procurement.</text>
+  <rect x="72" y="434" width="7" height="7" fill="#bfa46f"/>
+  <text x="94" y="446" fill="#bfa46f" font-family="Arial, sans-serif" font-size="20" letter-spacing=".2">Invictus Supply Solutions LLC</text>
+  <rect y="530" width="1200" height="100" fill="#f6f4ee"/>
+  <rect y="530" width="10" height="100" fill="#23756e"/>
+  <text x="72" y="590" fill="#102a37" font-family="Arial, sans-serif" font-size="25" letter-spacing=".2">Veteran-owned. Kentucky-based.</text>
+  <path d="M1068 580H1126M1118 572L1126 580L1118 588" fill="none" stroke="#23756e" stroke-width="2"/>
+</svg>
