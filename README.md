@@ -23,23 +23,39 @@ Edit the appropriate `index.html` for copy and `styles.css` for appearance. Both
 
 ## Publish approved changes
 
-Review the diff and check phone and desktop layouts before committing. Work on a change branch; after approval, bring the reviewed change into canonical `main` using the repository's current rules.
+Review the diff and check phone and desktop layouts on a change branch. Open a pull request against canonical `main`. After review and any configured checks pass, merge it in GitHub. GitHub Pages publishes the company root from that branch.
 
-Publishing the root project:
+### Update the separate innovation site
 
-```sh
-git push origin main
-```
-
-Publishing the innovation folder, from a clean, reviewed `main` checkout:
+When an approved change touches `innovation/`, run the following from a clean checkout of this canonical repository. Its `origin` should point to the company repository. The commands use the merged source on canonical `main` and start a review branch from the mirror's current `main`.
 
 ```sh
-git subtree push --prefix=innovation https://github.com/Invictus-Supply-Solutions/invictus-innovation.git main
+mirror_url=https://github.com/Invictus-Supply-Solutions/invictus-innovation.git
+git fetch origin refs/heads/main &&
+source_commit=$(git rev-parse FETCH_HEAD) &&
+split_commit=$(git subtree split --prefix=innovation "$source_commit") &&
+git fetch "$mirror_url" refs/heads/main &&
+mirror_base=$(git rev-parse FETCH_HEAD) &&
+review_branch="publish/innovation-$(git rev-parse --short=12 "$source_commit")-$(git rev-parse --short=12 "$mirror_base")" &&
+review_dir=$(mktemp -d "${TMPDIR:-/tmp}/invictus-publish.XXXXXX") &&
+git worktree add -b "$review_branch" "$review_dir" "$mirror_base" &&
+git -C "$review_dir" merge --no-ff --no-edit "$split_commit" &&
+git -C "$review_dir" diff --exit-code "$split_commit" HEAD -- &&
+git -C "$review_dir" diff "$mirror_base" HEAD --
 ```
 
-The second command publishes only committed files under `innovation/`. A root push alone does not update the separate innovation hostname. The innovation repository is a publication copy; make edits in this canonical project, not directly in that copy. If the mirror has independent changes, reconcile them here before publishing; do not force-push to bypass a divergence.
+If the merge conflicts or the split comparison reports a difference, reconcile the divergence in the canonical project and prepare a new review branch. If there is no site change, skip the mirror pull request.
 
-Both repositories use Pages **Deploy from a branch**, `main`, `/ (root)`. Retain `.nojekyll` and the correct `CNAME` in each source root. Verify both Pages runs and public URLs after deployment. Pages custom-domain settings must also match; a local file alone is not proof of live configuration.
+After reviewing the diff, push only the review branch.
+
+```sh
+git -C "$review_dir" diff --exit-code "$split_commit" HEAD -- &&
+git -C "$review_dir" push "$mirror_url" "HEAD:refs/heads/$review_branch"
+```
+
+Open a pull request from that branch into `main` in [the innovation repository](https://github.com/Invictus-Supply-Solutions/invictus-innovation). Note the canonical source commit in the PR. If the mirror base advances during review, prepare a fresh branch from the updated base and verify the diff again. Once approved, use **Create a merge commit** so the next subtree split retains its ancestry. You can remove the clean local worktree with `git worktree remove "$review_dir"`.
+
+Both repositories use Pages **Deploy from a branch**, `main`, `/ (root)`. Retain `.nojekyll` and the correct `CNAME` in each source root. Verify the relevant Pages run and public URL after publishing. Pages custom-domain settings must also match the expected domain.
 
 ## Domains and email
 
