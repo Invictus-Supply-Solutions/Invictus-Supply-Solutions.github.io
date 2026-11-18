@@ -23,7 +23,7 @@ Edit the appropriate `index.html` for copy and `styles.css` for appearance. Both
 
 ## Publish approved changes
 
-Review the diff and check phone and desktop layouts on a change branch. Open a pull request against canonical `main`. After review and any configured checks pass, merge it in GitHub. GitHub Pages publishes the company root from that branch.
+Review the diff and check phone and desktop layouts on a change branch. Open a pull request against canonical `main`. Wait for review, the `pages-check` job, and authorization to publish before merging in GitHub. GitHub Pages publishes the company root from that branch.
 
 ### Update the separate innovation site
 
@@ -35,19 +35,23 @@ review_ready=false
 git fetch origin refs/heads/main &&
 source_commit=$(git rev-parse FETCH_HEAD) &&
 source_short=$(git rev-parse --short=12 "$source_commit") &&
+source_tree=$(git rev-parse --verify "$source_commit:innovation") &&
 split_commit=$(git subtree split --prefix=innovation "$source_commit") &&
 split_tree=$(git rev-parse "$split_commit^{tree}") &&
+test "$split_tree" = "$source_tree" &&
 git fetch "$mirror_url" refs/heads/main &&
 mirror_base=$(git rev-parse FETCH_HEAD) &&
 mirror_tree=$(git rev-parse "$mirror_base^{tree}") &&
-if [ "$split_tree" = "$mirror_tree" ]; then
+if [ "$source_tree" = "$mirror_tree" ] &&
+   git merge-base --is-ancestor "$split_commit" "$mirror_base"; then
   printf '%s\n' 'The innovation mirror is already current.'
 else
   review_dir=$(mktemp -d "${TMPDIR:-/tmp}/invictus-publish.XXXXXX") &&
   review_branch="publish/innovation-$source_short-${review_dir##*.}" &&
   git worktree add -b "$review_branch" "$review_dir" "$mirror_base" &&
   git -C "$review_dir" merge --no-ff --no-edit "$split_commit" &&
-  test "$(git -C "$review_dir" rev-parse 'HEAD^{tree}')" = "$split_tree" &&
+  test "$(git -C "$review_dir" rev-parse 'HEAD^{tree}')" = "$source_tree" &&
+  git -C "$review_dir" merge-base --is-ancestor "$split_commit" HEAD &&
   git -C "$review_dir" diff "$mirror_base" HEAD -- &&
   review_ready=true
 fi
@@ -59,11 +63,12 @@ After reviewing the diff, push the prepared branch from the same shell.
 
 ```sh
 test "$review_ready" = true &&
-test "$(git -C "$review_dir" rev-parse 'HEAD^{tree}')" = "$split_tree" &&
+test "$(git -C "$review_dir" rev-parse 'HEAD^{tree}')" = "$source_tree" &&
+git -C "$review_dir" merge-base --is-ancestor "$split_commit" HEAD &&
 git -C "$review_dir" push "$mirror_url" "HEAD:refs/heads/$review_branch"
 ```
 
-Open a pull request from that branch into `main` in [the innovation repository](https://github.com/Invictus-Supply-Solutions/invictus-innovation). Note the canonical source commit in the PR. If the mirror base advances during review, prepare a fresh branch from the updated base and verify the diff again. Once approved, use **Create a merge commit** so the next subtree split retains its ancestry. You can remove the clean local worktree with `git worktree remove "$review_dir"`.
+Open a pull request from that branch into `main` in [the innovation repository](https://github.com/Invictus-Supply-Solutions/invictus-innovation). Note the canonical source commit and tree ID in the PR. If the mirror base advances during review, prepare a fresh branch from the updated base and verify the diff again. After review, a passing `pages-check`, and authorization to publish, use **Create a merge commit** so the next subtree split retains its ancestry. Verify the landed mirror commit's tree matches the canonical `innovation/` tree and contains the split commit as an ancestor. You can remove the clean local worktree with `git worktree remove "$review_dir"`.
 
 Both repositories use Pages **Deploy from a branch**, `main`, `/ (root)`. Retain `.nojekyll` and the correct `CNAME` in each source root. Verify the relevant Pages run and public URL after publishing. Pages custom-domain settings must also match the expected domain.
 

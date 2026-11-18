@@ -1,0 +1,45 @@
+name: Check Pages pull request
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  pages-check:
+    name: pages-check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Check PR diff
+        run: git diff --check HEAD^1 HEAD
+      - name: Validate static Pages sources
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          roots = [Path('.')]
+          if Path('innovation').is_dir():
+              roots.append(Path('innovation'))
+
+          for root in roots:
+              if not (root / '.nojekyll').is_file():
+                  raise SystemExit(f'{root}: missing .nojekyll')
+              for name in ('index.html', 'styles.css', 'assets/favicon.svg', 'CNAME',
+                           'robots.txt', 'sitemap.xml'):
+                  path = root / name
+                  if not path.is_file() or path.stat().st_size == 0:
+                      raise SystemExit(f'{path}: missing or empty')
+
+              domain = (root / 'CNAME').read_text().strip()
+              sitemap = ElementTree.parse(root / 'sitemap.xml')
+              locations = sitemap.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc')
+              if f'https://{domain}/' not in {location.text for location in locations}:
+                  raise SystemExit(f'{root}: sitemap does not contain the CNAME home URL')
+          PY
