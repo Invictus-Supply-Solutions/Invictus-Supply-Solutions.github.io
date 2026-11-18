@@ -6,7 +6,7 @@ Decision: deploy both pages. The existing company root page remains at `invictus
 
 The canonical project is the existing Invictus checkout and `Invictus-Supply-Solutions/Invictus-Supply-Solutions.github.io` repository. Root HTML, CSS, domain files and assets retain the original company site. The `innovation/` folder contains the reviewed consultancy site with its own metadata, favicon, domain file, robots file and sitemap.
 
-A separate public Pages repository, `Invictus-Supply-Solutions/invictus-innovation`, receives the Git subtree split of `innovation/`. This gives each hostname its own Pages configuration without a second editable source tree, paid service, framework, build dependency, cross-repository workflow token or scheduled automation. The README contains the two publication commands.
+A separate public Pages repository, `Invictus-Supply-Solutions/invictus-innovation`, receives the Git subtree split of `innovation/`. This gives each hostname its own Pages configuration without a second editable source tree, paid service, framework, build dependency, cross-repository workflow token or scheduled automation. Follow the [reviewed publishing procedure](../README.md#publish-approved-changes) for both sites.
 
 | Setting | Company root | Innovation |
 | --- | --- | --- |
@@ -26,4 +26,4 @@ Preserve root `www` forwarding, domain registration and all email records. No le
 
 Check both page contents and deployment revisions independently. Record successful public HTTP responses, certificate validity, enforced HTTPS and working local assets. DNS/certificate propagation may delay the new hostname after a successful Pages build; report those states separately.
 
-Make future edits in this canonical project. Publish only committed, reviewed innovation source through the subtree command. GitHub settings may write a CNAME commit in the publication repository; reconcile any independent mirror commit before later pushes rather than overwriting it. Keep the original root social-card assets because the root HTML references them.
+Make future edits in this canonical project. Merge the reviewed source on canonical `main`, then open a separate pull request for the innovation subtree in the publication repository. Preserve the subtree history with a merge commit. GitHub settings may write an independent `CNAME` commit in the publication repository. Reconcile any difference with the canonical source before updating the mirror. Keep the original root social-card assets because the root HTML references them.
