@@ -31,25 +31,35 @@ When an approved change touches `innovation/`, run the following from a clean ch
 
 ```sh
 mirror_url=https://github.com/Invictus-Supply-Solutions/invictus-innovation.git
+review_ready=false
 git fetch origin refs/heads/main &&
 source_commit=$(git rev-parse FETCH_HEAD) &&
+source_short=$(git rev-parse --short=12 "$source_commit") &&
 split_commit=$(git subtree split --prefix=innovation "$source_commit") &&
+split_tree=$(git rev-parse "$split_commit^{tree}") &&
 git fetch "$mirror_url" refs/heads/main &&
 mirror_base=$(git rev-parse FETCH_HEAD) &&
-review_branch="publish/innovation-$(git rev-parse --short=12 "$source_commit")-$(git rev-parse --short=12 "$mirror_base")" &&
-review_dir=$(mktemp -d "${TMPDIR:-/tmp}/invictus-publish.XXXXXX") &&
-git worktree add -b "$review_branch" "$review_dir" "$mirror_base" &&
-git -C "$review_dir" merge --no-ff --no-edit "$split_commit" &&
-git -C "$review_dir" diff --exit-code "$split_commit" HEAD -- &&
-git -C "$review_dir" diff "$mirror_base" HEAD --
+mirror_tree=$(git rev-parse "$mirror_base^{tree}") &&
+if [ "$split_tree" = "$mirror_tree" ]; then
+  printf '%s\n' 'The innovation mirror is already current.'
+else
+  review_dir=$(mktemp -d "${TMPDIR:-/tmp}/invictus-publish.XXXXXX") &&
+  review_branch="publish/innovation-$source_short-${review_dir##*.}" &&
+  git worktree add -b "$review_branch" "$review_dir" "$mirror_base" &&
+  git -C "$review_dir" merge --no-ff --no-edit "$split_commit" &&
+  test "$(git -C "$review_dir" rev-parse 'HEAD^{tree}')" = "$split_tree" &&
+  git -C "$review_dir" diff "$mirror_base" HEAD -- &&
+  review_ready=true
+fi
 ```
 
-If the merge conflicts or the split comparison reports a difference, reconcile the divergence in the canonical project and prepare a new review branch. If there is no site change, skip the mirror pull request.
+If the first block reports that the mirror is current, stop there. If the merge conflicts, run `git -C "$review_dir" merge --abort`. Remove the worktree once it is clean with `git worktree remove "$review_dir"`. A tree mismatch means the resulting snapshot contains a difference from the canonical subtree. Reconcile that difference in the canonical repository before retrying. Each retry creates a fresh review branch and worktree.
 
-After reviewing the diff, push only the review branch.
+After reviewing the diff, push the prepared branch from the same shell.
 
 ```sh
-git -C "$review_dir" diff --exit-code "$split_commit" HEAD -- &&
+test "$review_ready" = true &&
+test "$(git -C "$review_dir" rev-parse 'HEAD^{tree}')" = "$split_tree" &&
 git -C "$review_dir" push "$mirror_url" "HEAD:refs/heads/$review_branch"
 ```
 
